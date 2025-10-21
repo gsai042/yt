@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Downloader Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      width: 360px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 { margin-bottom: 10px; }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #00c6ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover { background-color: #0072ff; }
+
+    #result { margin-top: 15px; }
+
+    a.download-link {
+      display: block;
+      margin-top: 8px;
+      padding: 8px;
+      background: #00c6ff;
+      border-radius: 5px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a.download-link:hover { background: #0072ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Video Downloader</h1>
+    <p>Paste a YouTube, Instagram, or TikTok link below</p>
+    <form id="downloadForm">
+      <input type="url" id="videoUrl" placeholder="Enter video URL..." required />
+      <button type="submit">Download</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById("downloadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const videoUrl = document.getElementById("videoUrl").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "Processing your request...";
+
+      try {
+        const response = await fetch("https://video-downloader-backend.onrender.com/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: videoUrl }),
+        });
+
+        const data = await response.json();
+
+        if (data.medias && data.medias.length > 0) {
+          const links = data.medias
+            .map((m) => `<a class="download-link" href="${m.url}" target="_blank">Download ${m.quality || "video"}</a>`)
+            .join("");
+          resultDiv.innerHTML = links;
+        } else {
+          resultDiv.innerHTML = "No downloadable video found for that link.";
+        }
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = "Error connecting to the server.";
+      }
+    });
+  </script>
+</body>
+</html>
